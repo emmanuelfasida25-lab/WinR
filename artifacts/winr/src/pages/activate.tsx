@@ -155,7 +155,7 @@ export default function ActivatePage() {
                         <FormItem>
                           <FormLabel>Amount Sent (₦)</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} readOnly />
+                            <Input type="number" min={100} step={100} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
