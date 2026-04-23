@@ -1,36 +1,860 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: WINR platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: me
+  - name: payment
+  - name: dashboard
+  - name: transactions
+  - name: withdrawals
+  - name: affiliate
+  - name: notifications
+  - name: support
+  - name: admin
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  /me:
+    get:
+      operationId: getMe
+      tags: [me]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+    patch:
+      operationId: updateMe
+      tags: [me]
+      summary: Update profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateMeBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+
+  /me/bootstrap:
+    post:
+      operationId: bootstrapMe
+      tags: [me]
+      summary: Create user record on first login (idempotent)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BootstrapBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+
+  /payment/info:
+    get:
+      operationId: getPaymentInfo
+      tags: [payment]
+      summary: Get manual payment instructions and the user's reference code
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentInfo" }
+
+  /payment/submit:
+    post:
+      operationId: submitPaymentClaim
+      tags: [payment]
+      summary: User declares they have paid; creates a pending payment record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SubmitPaymentBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Payment" }
+
+  /dashboard/overview:
+    get:
+      operationId: getDashboardOverview
+      tags: [dashboard]
+      summary: Dashboard summary numbers
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardOverview" }
+
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List user's transactions
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50, maximum: 200 }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/Transaction" }
+
+  /withdrawals:
+    get:
+      operationId: listMyWithdrawals
+      tags: [withdrawals]
+      summary: List my withdrawal requests
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Withdrawal" }
+    post:
+      operationId: requestWithdrawal
+      tags: [withdrawals]
+      summary: Request a withdrawal (1 per week)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RequestWithdrawalBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Withdrawal" }
+
+  /withdrawals/eligibility:
+    get:
+      operationId: getWithdrawalEligibility
+      tags: [withdrawals]
+      summary: Whether the user can request a withdrawal this week
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WithdrawalEligibility" }
+
+  /affiliate/summary:
+    get:
+      operationId: getAffiliateSummary
+      tags: [affiliate]
+      summary: Referral code, link, totals, and referred users
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AffiliateSummary" }
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List user's notifications
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Notification" }
+
+  /notifications/stream:
+    get:
+      operationId: streamNotifications
+      tags: [notifications]
+      summary: Server-Sent Events stream of new notifications
+      responses:
+        "200":
+          description: stream
+          content:
+            text/event-stream:
+              schema: { type: string }
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all as read
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OkResponse" }
+
+  /support/tickets:
+    get:
+      operationId: listMyTickets
+      tags: [support]
+      summary: List my support tickets
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SupportTicket" }
+    post:
+      operationId: createTicket
+      tags: [support]
+      summary: Open a support ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTicketBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportTicket" }
+
+  /support/tickets/{ticketId}:
+    get:
+      operationId: getTicket
+      tags: [support]
+      summary: Get a ticket with messages
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportTicketDetail" }
+
+  /support/tickets/{ticketId}/messages:
+    post:
+      operationId: postTicketMessage
+      tags: [support]
+      summary: Post a message to a ticket
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PostTicketMessageBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportMessage" }
+
+  /admin/overview:
+    get:
+      operationId: adminOverview
+      tags: [admin]
+      summary: Admin platform-wide stats
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminOverview" }
+
+  /admin/users:
+    get:
+      operationId: adminListUsers
+      tags: [admin]
+      summary: List all users
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminUser" }
+
+  /admin/users/{userId}/balance:
+    post:
+      operationId: adminUpdateBalance
+      tags: [admin]
+      summary: Credit or debit a user's balance
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminUpdateBalanceBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminUser" }
+
+  /admin/users/{userId}/status:
+    post:
+      operationId: adminSetUserStatus
+      tags: [admin]
+      summary: Activate, suspend, or reset a user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminSetStatusBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminUser" }
+
+  /admin/payments:
+    get:
+      operationId: adminListPayments
+      tags: [admin]
+      summary: List payment claims
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminPayment" }
+
+  /admin/payments/{paymentId}/decision:
+    post:
+      operationId: adminDecidePayment
+      tags: [admin]
+      summary: Confirm or reject a payment claim
+      parameters:
+        - in: path
+          name: paymentId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminDecidePaymentBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminPayment" }
+
+  /admin/withdrawals:
+    get:
+      operationId: adminListWithdrawals
+      tags: [admin]
+      summary: List withdrawal requests
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminWithdrawal" }
+
+  /admin/withdrawals/{withdrawalId}/decision:
+    post:
+      operationId: adminDecideWithdrawal
+      tags: [admin]
+      summary: Approve or reject a withdrawal
+      parameters:
+        - in: path
+          name: withdrawalId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminDecideWithdrawalBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminWithdrawal" }
+
+  /admin/affiliate/payouts:
+    get:
+      operationId: adminListAffiliatePayouts
+      tags: [admin]
+      summary: List pending and recent affiliate (referral) payouts
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AffiliatePayout" }
+
+  /admin/affiliate/payouts/{referralId}/payout:
+    post:
+      operationId: adminPayoutAffiliate
+      tags: [admin]
+      summary: Mark a referral bonus as paid (credits the referrer)
+      parameters:
+        - in: path
+          name: referralId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AffiliatePayout" }
+
+  /admin/tickets:
+    get:
+      operationId: adminListTickets
+      tags: [admin]
+      summary: List support tickets
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SupportTicket" }
+
+  /admin/tickets/{ticketId}:
+    get:
+      operationId: adminGetTicket
+      tags: [admin]
+      summary: Get ticket with messages (admin)
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportTicketDetail" }
+
+  /admin/tickets/{ticketId}/reply:
+    post:
+      operationId: adminReplyTicket
+      tags: [admin]
+      summary: Admin reply to a ticket
+      parameters:
+        - in: path
+          name: ticketId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PostTicketMessageBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SupportMessage" }
+
+  /admin/notifications/broadcast:
+    post:
+      operationId: adminBroadcast
+      tags: [admin]
+      summary: Send a notification to all users (or one)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BroadcastBody" }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OkResponse" }
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
+    OkResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+      required: [ok]
 
+    Me:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        fullName: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        bankName: { type: string, nullable: true }
+        accountNumber: { type: string, nullable: true }
+        accountName: { type: string, nullable: true }
+        referralCode: { type: string }
+        referenceCode: { type: string }
+        referredByCode: { type: string, nullable: true }
+        status: { type: string, enum: [pending, active, suspended] }
+        role: { type: string, enum: [user, admin] }
+        balance: { type: number }
+        createdAt: { type: string, format: date-time }
+      required: [id, email, referralCode, referenceCode, status, role, balance, createdAt]
+    UpdateMeBody:
+      type: object
+      properties:
+        fullName: { type: string }
+        phone: { type: string }
+        bankName: { type: string }
+        accountNumber: { type: string }
+        accountName: { type: string }
+    BootstrapBody:
+      type: object
+      properties:
+        referralCode: { type: string, nullable: true }
+
+    PaymentInfo:
+      type: object
+      properties:
+        amount: { type: number }
+        currency: { type: string }
+        bankName: { type: string }
+        accountNumber: { type: string }
+        accountName: { type: string }
+        narration: { type: string, description: "User's reference code to use as the bank narration" }
+        instructions: { type: string }
+        latestClaim: { $ref: "#/components/schemas/Payment", nullable: true }
+      required: [amount, currency, bankName, accountNumber, accountName, narration, instructions]
+    SubmitPaymentBody:
+      type: object
+      properties:
+        amount: { type: number }
+        senderName: { type: string }
+        note: { type: string }
+      required: [amount, senderName]
+    Payment:
+      type: object
+      properties:
+        id: { type: integer }
+        amount: { type: number }
+        senderName: { type: string }
+        note: { type: string, nullable: true }
+        narration: { type: string }
+        status: { type: string, enum: [pending, confirmed, rejected] }
+        createdAt: { type: string, format: date-time }
+        decidedAt: { type: string, format: date-time, nullable: true }
+      required: [id, amount, senderName, narration, status, createdAt]
+
+    DashboardOverview:
+      type: object
+      properties:
+        balance: { type: number }
+        totalEarned: { type: number }
+        totalWithdrawn: { type: number }
+        pendingWithdrawals: { type: number }
+        referralCount: { type: integer }
+        unreadNotifications: { type: integer }
+        status: { type: string }
+        recentTransactions:
+          type: array
+          items: { $ref: "#/components/schemas/Transaction" }
+      required: [balance, totalEarned, totalWithdrawn, pendingWithdrawals, referralCount, unreadNotifications, status, recentTransactions]
+
+    Transaction:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { type: string, enum: [credit, debit, withdrawal, referral_bonus, admin_credit, admin_debit, activation] }
+        amount: { type: number }
+        description: { type: string }
+        balanceAfter: { type: number }
+        createdAt: { type: string, format: date-time }
+      required: [id, type, amount, description, balanceAfter, createdAt]
+
+    Withdrawal:
+      type: object
+      properties:
+        id: { type: integer }
+        amount: { type: number }
+        bankName: { type: string }
+        accountNumber: { type: string }
+        accountName: { type: string }
+        status: { type: string, enum: [pending, approved, rejected, paid] }
+        requestedAt: { type: string, format: date-time }
+        decidedAt: { type: string, format: date-time, nullable: true }
+        adminNote: { type: string, nullable: true }
+      required: [id, amount, bankName, accountNumber, accountName, status, requestedAt]
+    RequestWithdrawalBody:
+      type: object
+      properties:
+        amount: { type: number }
+      required: [amount]
+    WithdrawalEligibility:
+      type: object
+      properties:
+        canRequest: { type: boolean }
+        reason: { type: string, nullable: true }
+        nextEligibleAt: { type: string, format: date-time, nullable: true }
+        weekKey: { type: string }
+        minAmount: { type: number }
+      required: [canRequest, weekKey, minAmount]
+
+    AffiliateSummary:
+      type: object
+      properties:
+        referralCode: { type: string }
+        referralLink: { type: string }
+        totalReferrals: { type: integer }
+        activeReferrals: { type: integer }
+        totalBonusEarned: { type: number }
+        pendingBonus: { type: number }
+        bonusPerReferral: { type: number }
+        referredUsers:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              email: { type: string }
+              fullName: { type: string, nullable: true }
+              status: { type: string }
+              joinedAt: { type: string, format: date-time }
+              bonusCredited: { type: boolean }
+            required: [id, email, status, joinedAt, bonusCredited]
+      required: [referralCode, referralLink, totalReferrals, activeReferrals, totalBonusEarned, pendingBonus, bonusPerReferral, referredUsers]
+
+    Notification:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        body: { type: string }
+        kind: { type: string }
+        read: { type: boolean }
+        createdAt: { type: string, format: date-time }
+      required: [id, title, body, kind, read, createdAt]
+
+    SupportTicket:
+      type: object
+      properties:
+        id: { type: integer }
+        subject: { type: string }
+        status: { type: string, enum: [open, closed] }
+        userEmail: { type: string, nullable: true }
+        lastMessagePreview: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, subject, status, createdAt, updatedAt]
+    SupportTicketDetail:
+      type: object
+      properties:
+        ticket: { $ref: "#/components/schemas/SupportTicket" }
+        messages:
+          type: array
+          items: { $ref: "#/components/schemas/SupportMessage" }
+      required: [ticket, messages]
+    SupportMessage:
+      type: object
+      properties:
+        id: { type: integer }
+        ticketId: { type: integer }
+        senderRole: { type: string, enum: [user, admin] }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [id, ticketId, senderRole, body, createdAt]
+    CreateTicketBody:
+      type: object
+      properties:
+        subject: { type: string }
+        body: { type: string }
+      required: [subject, body]
+    PostTicketMessageBody:
+      type: object
+      properties:
+        body: { type: string }
+      required: [body]
+
+    AdminOverview:
+      type: object
+      properties:
+        totalUsers: { type: integer }
+        activeUsers: { type: integer }
+        pendingUsers: { type: integer }
+        pendingPayments: { type: integer }
+        pendingWithdrawals: { type: integer }
+        openTickets: { type: integer }
+        pendingAffiliatePayouts: { type: integer }
+        totalBalanceOutstanding: { type: number }
+      required: [totalUsers, activeUsers, pendingUsers, pendingPayments, pendingWithdrawals, openTickets, pendingAffiliatePayouts, totalBalanceOutstanding]
+
+    AdminUser:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        fullName: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        referralCode: { type: string }
+        referenceCode: { type: string }
+        status: { type: string }
+        role: { type: string }
+        balance: { type: number }
+        createdAt: { type: string, format: date-time }
+      required: [id, email, referralCode, referenceCode, status, role, balance, createdAt]
+    AdminUpdateBalanceBody:
+      type: object
+      properties:
+        delta: { type: number, description: "Positive to credit, negative to debit" }
+        reason: { type: string }
+      required: [delta, reason]
+    AdminSetStatusBody:
+      type: object
+      properties:
+        status: { type: string, enum: [pending, active, suspended] }
+      required: [status]
+
+    AdminPayment:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        userEmail: { type: string }
+        amount: { type: number }
+        senderName: { type: string }
+        note: { type: string, nullable: true }
+        narration: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [id, userId, userEmail, amount, senderName, narration, status, createdAt]
+    AdminDecidePaymentBody:
+      type: object
+      properties:
+        decision: { type: string, enum: [confirm, reject] }
+        note: { type: string }
+      required: [decision]
+
+    AdminWithdrawal:
+      type: object
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        userEmail: { type: string }
+        amount: { type: number }
+        bankName: { type: string }
+        accountNumber: { type: string }
+        accountName: { type: string }
+        status: { type: string }
+        requestedAt: { type: string, format: date-time }
+      required: [id, userId, userEmail, amount, bankName, accountNumber, accountName, status, requestedAt]
+    AdminDecideWithdrawalBody:
+      type: object
+      properties:
+        decision: { type: string, enum: [approve, reject, paid] }
+        note: { type: string }
+      required: [decision]
+
+    AffiliatePayout:
+      type: object
+      properties:
+        id: { type: integer }
+        referrerId: { type: integer }
+        referrerEmail: { type: string }
+        referredUserId: { type: integer }
+        referredUserEmail: { type: string }
+        amount: { type: number }
+        status: { type: string, enum: [pending, paid] }
+        createdAt: { type: string, format: date-time }
+      required: [id, referrerId, referrerEmail, referredUserId, referredUserEmail, amount, status, createdAt]
+
+    BroadcastBody:
+      type: object
+      properties:
+        title: { type: string }
+        body: { type: string }
+        userId: { type: integer, nullable: true, description: "Target a specific user, omit for broadcast" }
+      required: [title, body]

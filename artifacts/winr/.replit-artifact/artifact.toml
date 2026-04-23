@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "WINR"
+version = "1.0.0"
+id = "artifacts/winr"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24643
+
+[services.development]
+run = "pnpm --filter @workspace/winr run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/winr", "run", "build" ]
+publicDir = "artifacts/winr/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24643"
+BASE_PATH = "/"
