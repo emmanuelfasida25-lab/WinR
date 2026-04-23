@@ -12,9 +12,27 @@ declare global {
   }
 }
 
+function adminEmails(): string[] {
+  return (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 async function getOrCreateUser(clerkId: string): Promise<User> {
   const existing = await db.select().from(usersTable).where(eq(usersTable.clerkId, clerkId)).limit(1);
-  if (existing[0]) return existing[0];
+  if (existing[0]) {
+    const wantsAdmin = adminEmails().includes(existing[0].email.toLowerCase());
+    if (wantsAdmin && (existing[0].role !== "admin" || existing[0].status !== "active")) {
+      const [bumped] = await db
+        .update(usersTable)
+        .set({ role: "admin", status: "active" })
+        .where(eq(usersTable.id, existing[0].id))
+        .returning();
+      return bumped ?? existing[0];
+    }
+    return existing[0];
+  }
 
   const cu = await clerkClient.users.getUser(clerkId);
   const email =
@@ -25,6 +43,7 @@ async function getOrCreateUser(clerkId: string): Promise<User> {
 
   const referralCode = await uniqueReferralCode();
   const referenceCode = await uniqueReferenceCode();
+  const isAdmin = adminEmails().includes(email.toLowerCase());
 
   const inserted = await db
     .insert(usersTable)
@@ -34,6 +53,8 @@ async function getOrCreateUser(clerkId: string): Promise<User> {
       fullName,
       referralCode,
       referenceCode,
+      role: isAdmin ? "admin" : "user",
+      status: isAdmin ? "active" : "pending",
     })
     .onConflictDoNothing({ target: usersTable.clerkId })
     .returning();
