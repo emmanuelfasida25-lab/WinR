@@ -63,10 +63,10 @@ export default function ActivatePage() {
     <div className="min-h-screen bg-background flex flex-col items-center py-12 px-4">
       <div className="max-w-2xl w-full space-y-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/dashboard`} className="flex items-center gap-2 cursor-pointer">
             <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.svg`} alt="WINR" className="h-8" />
             <span className="font-bold text-xl text-primary">WINR</span>
-          </div>
+          </a>
           <Button variant="ghost" onClick={() => signOut()}>Sign Out</Button>
         </div>
 

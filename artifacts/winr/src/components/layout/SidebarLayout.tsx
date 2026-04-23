@@ -111,10 +111,12 @@ export function SidebarLayout({ children, isAdmin = false }: { children: React.R
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card z-10 sticky top-0">
-        <div className="flex items-center gap-2">
-          <img src={`${basePath}/logo.svg`} alt="WINR" className="h-8" />
-          <span className="font-bold text-xl tracking-tight text-primary">WINR</span>
-        </div>
+        <Link href={isAdmin ? "/admin" : "/dashboard"}>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <img src={`${basePath}/logo.svg`} alt="WINR" className="h-8" />
+            <span className="font-bold text-xl tracking-tight text-primary">WINR</span>
+          </div>
+        </Link>
         <div className="flex items-center gap-3">
           <span className="font-bold text-foreground bg-muted px-3 py-1.5 rounded-lg text-sm">
             {formatNaira(me?.balance || 0)}
@@ -127,10 +129,12 @@ export function SidebarLayout({ children, isAdmin = false }: { children: React.R
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-72 bg-card border-r-border">
               <div className="p-6 pb-2">
-                <div className="flex items-center gap-2 mb-6">
-                  <img src={`${basePath}/logo.svg`} alt="WINR" className="h-8" />
-                  <span className="font-bold text-2xl tracking-tight text-primary">WINR</span>
-                </div>
+                <Link href={isAdmin ? "/admin" : "/dashboard"}>
+                  <div className="flex items-center gap-2 mb-6 cursor-pointer" onClick={() => setIsOpen(false)}>
+                    <img src={`${basePath}/logo.svg`} alt="WINR" className="h-8" />
+                    <span className="font-bold text-2xl tracking-tight text-primary">WINR</span>
+                  </div>
+                </Link>
                 <div className="bg-muted rounded-xl p-4 mb-4">
                   <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
                   <p className="text-2xl font-bold text-foreground">{formatNaira(me?.balance || 0)}</p>
@@ -157,7 +161,7 @@ export function SidebarLayout({ children, isAdmin = false }: { children: React.R
       {/* Desktop Sidebar */}
       <div className="hidden md:flex flex-col w-72 bg-card border-r border-border fixed h-screen top-0 left-0 z-20">
         <div className="p-6">
-          <Link href="/">
+          <Link href={isAdmin ? "/admin" : "/dashboard"}>
             <div className="flex items-center gap-3 mb-8 cursor-pointer">
               <img src={`${basePath}/logo.svg`} alt="WINR" className="h-10" />
               <span className="font-bold text-3xl tracking-tight text-primary">WINR</span>
