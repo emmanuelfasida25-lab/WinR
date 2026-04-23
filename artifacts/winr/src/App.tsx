@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk, useUser } from "@clerk/react";
 import { shadcn } from "@clerk/themes";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useBootstrapMe, useGetMe } from "@workspace/api-client-react";
 
 import NotFound from "@/pages/not-found";
@@ -122,8 +122,11 @@ function Bootstrapper() {
     if (isLoaded && isSignedIn && !bootstrapRef.current) {
       bootstrapRef.current = true;
       const params = new URLSearchParams(window.location.search);
-      const ref = params.get("ref");
+      const ref =
+        params.get("ref") ||
+        (typeof window !== "undefined" ? window.localStorage.getItem("winr.ref") : null);
       bootstrap.mutate({ data: { referralCode: ref || null } });
+      if (typeof window !== "undefined") window.localStorage.removeItem("winr.ref");
     }
   }, [isLoaded, isSignedIn]);
 
@@ -152,9 +155,42 @@ function SignInPage() {
 }
 
 function SignUpPage() {
+  const [refCode, setRefCode] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    const fromUrl = new URLSearchParams(window.location.search).get("ref");
+    return (fromUrl || window.localStorage.getItem("winr.ref") || "").toUpperCase();
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const trimmed = refCode.trim().toUpperCase();
+    if (trimmed) window.localStorage.setItem("winr.ref", trimmed);
+    else window.localStorage.removeItem("winr.ref");
+  }, [refCode]);
+
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-12">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-full max-w-sm rounded-lg border border-border bg-card p-4 shadow-sm">
+          <label htmlFor="winr-ref" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Referral code (optional)
+          </label>
+          <input
+            id="winr-ref"
+            type="text"
+            value={refCode}
+            onChange={(e) => setRefCode(e.target.value.toUpperCase())}
+            placeholder="e.g. ABC1234"
+            className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm tracking-wider text-foreground placeholder:text-muted-foreground/50 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            data-testid="input-referral-code"
+            maxLength={16}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            Got a referral code from a friend? Enter it here so they get their bonus when you activate.
+          </p>
+        </div>
+        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      </div>
     </div>
   );
 }
