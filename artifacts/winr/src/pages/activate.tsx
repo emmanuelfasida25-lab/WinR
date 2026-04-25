@@ -15,7 +15,7 @@ import { useClerk } from "@clerk/react";
 
 const claimSchema = z.object({
   senderName: z.string().min(2, "Sender name is required"),
-  amount: z.coerce.number().min(100, "Amount must be valid"),
+  amount: z.coerce.number().min(20000, "Minimum amount is ₦20,000"),
   note: z.string().optional(),
 });
 
@@ -31,7 +31,7 @@ export default function ActivatePage() {
     resolver: zodResolver(claimSchema),
     defaultValues: {
       senderName: "",
-      amount: 5500,
+      amount: 20000,
       note: "",
     },
   });
@@ -156,7 +156,7 @@ export default function ActivatePage() {
                         <FormItem>
                           <FormLabel>Amount Sent (₦)</FormLabel>
                           <FormControl>
-                            <Input type="number" min={100} step={100} {...field} />
+                            <Input type="number" min={20000} step={500} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
