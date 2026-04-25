@@ -60,7 +60,8 @@ export default function ActivatePage() {
   const latestClaim = paymentInfo.latestClaim;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex-1 flex flex-col items-center py-12 px-4">
       <div className="max-w-2xl w-full space-y-8">
         <div className="flex items-center justify-between">
           <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/dashboard`} className="flex items-center gap-2 cursor-pointer">
@@ -184,6 +185,14 @@ export default function ActivatePage() {
           </div>
         )}
       </div>
+      </div>
+      <footer className="border-t border-amber-500/20 bg-amber-500/5 py-4 px-4">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-amber-500">Risk Warning:</span> Trading involves significant risk. Losses can exceed expectations and past performance does not guarantee future results. Only trade with money you can afford to lose.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

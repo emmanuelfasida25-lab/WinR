@@ -113,7 +113,12 @@ export default function Home() {
           <img src={`${basePath}/logo.svg`} alt="WINR Logo" className="h-6 w-6 opacity-50 grayscale" />
           <span className="font-bold text-xl tracking-tight text-foreground/50">WINR</span>
         </div>
-        <p>© {new Date().getFullYear()} WINR Platform. All rights reserved.</p>
+        <p className="mb-6">© {new Date().getFullYear()} WINR Platform. All rights reserved.</p>
+        <div className="max-w-3xl mx-auto border-t border-amber-500/20 pt-6 mt-2">
+          <p className="text-xs leading-relaxed">
+            <span className="font-semibold text-amber-500">Risk Warning:</span> Trading involves significant risk. Losses can exceed expectations and past performance does not guarantee future results. Only trade with money you can afford to lose.
+          </p>
+        </div>
       </footer>
     </div>
   );

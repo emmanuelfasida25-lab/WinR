@@ -22,6 +22,7 @@ import { formatNaira } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { RiskFooter } from "@/components/risk/RiskDisclaimer";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -201,10 +202,11 @@ export function SidebarLayout({ children, isAdmin = false }: { children: React.R
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 md:ml-72 min-h-screen pb-20 md:pb-0">
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
+      <div className="flex-1 md:ml-72 min-h-screen pb-20 md:pb-0 flex flex-col">
+        <div className="max-w-6xl mx-auto p-4 md:p-8 w-full flex-1">
           {children}
         </div>
+        <RiskFooter />
       </div>
     </div>
   );

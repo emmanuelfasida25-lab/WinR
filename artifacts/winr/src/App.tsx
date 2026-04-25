@@ -6,6 +6,8 @@ import { ClerkProvider, SignIn, SignUp, Show, useClerk, useUser } from "@clerk/r
 import { shadcn } from "@clerk/themes";
 import { useEffect, useRef, useState } from "react";
 import { useBootstrapMe, useGetMe } from "@workspace/api-client-react";
+import { RiskAcknowledgmentDialog } from "@/components/risk/RiskAcknowledgmentDialog";
+import { RiskFooter } from "@/components/risk/RiskDisclaimer";
 
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
@@ -148,8 +150,11 @@ function HomeRedirect() {
 
 function SignInPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-12">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+    <div className="flex min-h-[100dvh] flex-col bg-background">
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
+        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+      </div>
+      <RiskFooter />
     </div>
   );
 }
@@ -169,7 +174,8 @@ function SignUpPage() {
   }, [refCode]);
 
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-12">
+    <div className="flex min-h-[100dvh] flex-col bg-background">
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="flex flex-col items-center gap-4">
         <div className="w-full max-w-sm rounded-lg border border-border bg-card p-4 shadow-sm">
           <label htmlFor="winr-ref" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -191,6 +197,8 @@ function SignUpPage() {
         </div>
         <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
       </div>
+      </div>
+      <RiskFooter />
     </div>
   );
 }
@@ -253,6 +261,7 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
         <Bootstrapper />
+        <RiskAcknowledgmentDialog />
         <Switch>
           <Route path="/" component={HomeRedirect} />
           <Route path="/sign-in/*?" component={SignInPage} />
