@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { db, paymentsTable, type Payment } from "@workspace/db";
 import { desc, eq } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
-import { ACTIVATION_FEE, PAYMENT_INFO, PAYMENT_INSTRUCTIONS } from "../lib/config";
+import { ACTIVATION_FEE, MIN_FUND_AMOUNT, PAYMENT_INFO, PAYMENT_INSTRUCTIONS } from "../lib/config";
 import { num } from "../lib/serialize";
 import { SubmitPaymentClaimBody } from "@workspace/api-zod";
 import { notify } from "../lib/notify";
@@ -54,6 +54,18 @@ router.post("/payment/submit", requireAuth, async (req, res) => {
     return;
   }
   const me = req.user!;
+  const amt = Number(parsed.data.amount);
+  if (me.status === "active") {
+    if (!Number.isFinite(amt) || amt < MIN_FUND_AMOUNT) {
+      res.status(400).json({ error: `Minimum funding amount is ₦${MIN_FUND_AMOUNT.toLocaleString("en-NG")}` });
+      return;
+    }
+  } else {
+    if (amt !== ACTIVATION_FEE) {
+      res.status(400).json({ error: `Activation fee is exactly ₦${ACTIVATION_FEE.toLocaleString("en-NG")}` });
+      return;
+    }
+  }
   const [created] = await db
     .insert(paymentsTable)
     .values({

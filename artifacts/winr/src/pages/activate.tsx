@@ -12,12 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Copy, CheckCircle2, Clock } from "lucide-react";
 import { useClerk } from "@clerk/react";
+import { useEffect } from "react";
 
-const claimSchema = z.object({
-  senderName: z.string().min(2, "Sender name is required"),
-  amount: z.coerce.number().min(20000, "Minimum amount is ₦20,000"),
-  note: z.string().optional(),
-});
+const ACTIVATION_FEE = 5500;
+const MIN_FUND_AMOUNT = 20000;
 
 export default function ActivatePage() {
   const { data: me } = useGetMe();
@@ -27,14 +25,34 @@ export default function ActivatePage() {
   const { toast } = useToast();
   const { signOut } = useClerk();
 
+  const isActive = me?.status === "active";
+  const minAmount = isActive ? MIN_FUND_AMOUNT : ACTIVATION_FEE;
+  const requireExact = !isActive;
+
+  const claimSchema = z.object({
+    senderName: z.string().min(2, "Sender name is required"),
+    amount: z.coerce.number().refine(
+      (v) => (requireExact ? v === ACTIVATION_FEE : v >= MIN_FUND_AMOUNT),
+      requireExact
+        ? `Activation fee is exactly ₦${ACTIVATION_FEE.toLocaleString("en-NG")}`
+        : `Minimum funding amount is ₦${MIN_FUND_AMOUNT.toLocaleString("en-NG")}`,
+    ),
+    note: z.string().optional(),
+  });
+
   const form = useForm<z.infer<typeof claimSchema>>({
     resolver: zodResolver(claimSchema),
     defaultValues: {
       senderName: "",
-      amount: 20000,
+      amount: minAmount,
       note: "",
     },
   });
+
+  useEffect(() => {
+    const cur = form.getValues("amount");
+    if (!cur || cur < minAmount) form.setValue("amount", minAmount);
+  }, [minAmount]);
 
   if (isLoading || !paymentInfo || !me) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-pulse">Loading...</div></div>;
@@ -72,8 +90,12 @@ export default function ActivatePage() {
         </div>
 
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Activate Your Account</h1>
-          <p className="text-muted-foreground">Complete the payment to unlock your WINR dashboard.</p>
+          <h1 className="text-3xl font-bold mb-2">{isActive ? "Fund Your Account" : "Activate Your Account"}</h1>
+          <p className="text-muted-foreground">
+            {isActive
+              ? `Top up your WINR balance. Minimum funding amount is ₦${MIN_FUND_AMOUNT.toLocaleString("en-NG")}.`
+              : "Complete the payment to unlock your WINR dashboard."}
+          </p>
         </div>
 
         {latestClaim && latestClaim.status === "pending" ? (
@@ -92,7 +114,11 @@ export default function ActivatePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Transfer Instructions</CardTitle>
-                <CardDescription>Send exactly {formatNaira(paymentInfo.amount)} to the account below.</CardDescription>
+                <CardDescription>
+                  {isActive
+                    ? `Send at least ${formatNaira(MIN_FUND_AMOUNT)} to the account below.`
+                    : `Send exactly ${formatNaira(ACTIVATION_FEE)} to the account below.`}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-muted p-4 rounded-lg space-y-4">
@@ -156,7 +182,7 @@ export default function ActivatePage() {
                         <FormItem>
                           <FormLabel>Amount Sent (₦)</FormLabel>
                           <FormControl>
-                            <Input type="number" min={20000} step={500} {...field} />
+                            <Input type="number" min={minAmount} step={isActive ? 500 : 100} readOnly={!isActive} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

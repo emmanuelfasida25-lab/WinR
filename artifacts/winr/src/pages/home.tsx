@@ -45,10 +45,10 @@ export default function Home() {
                 Start Earning Now <ArrowRight className="h-5 w-5" />
               </a>
             </Link>
-            <p className="text-sm text-muted-foreground sm:hidden mt-2">Just ₦20,000 to activate</p>
+            <p className="text-sm text-muted-foreground sm:hidden mt-2">Just ₦5,500 to activate</p>
           </div>
           <div className="mt-8 text-sm text-muted-foreground hidden sm:flex items-center justify-center gap-6">
-            <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> One-time ₦20,000 fee</div>
+            <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> One-time ₦5,500 fee</div>
             <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> ₦500 per referral</div>
             <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> Weekly withdrawals</div>
           </div>
@@ -69,7 +69,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold mb-3">1. Activate Account</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Sign up and pay a one-time activation fee of ₦20,000 via secure bank transfer to unlock your dashboard.
+                  Sign up and pay a one-time activation fee of ₦5,500 via secure bank transfer to unlock your dashboard.
                 </p>
               </div>
 
