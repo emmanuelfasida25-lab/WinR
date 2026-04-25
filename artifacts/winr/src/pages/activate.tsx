@@ -14,7 +14,7 @@ import { Copy, CheckCircle2, Clock } from "lucide-react";
 import { useClerk } from "@clerk/react";
 import { useEffect } from "react";
 
-const ACTIVATION_FEE = 5500;
+const ACTIVATION_FEE = 1000;
 const MIN_FUND_AMOUNT = 20000;
 
 export default function ActivatePage() {

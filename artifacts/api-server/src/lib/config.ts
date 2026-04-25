@@ -1,4 +1,4 @@
-export const ACTIVATION_FEE = 5500;
+export const ACTIVATION_FEE = 1000;
 export const MIN_FUND_AMOUNT = 20000;
 export const REFERRAL_BONUS = 500;
 export const MIN_WITHDRAWAL = 1000;
