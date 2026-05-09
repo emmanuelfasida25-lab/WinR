@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: pnpm install
+      - run: pnpm install --ignore-scripts
       - run: pnpm --filter @workspace/db run push
         env:
           DATABASE_URL: ${{ secrets.WINR_URL }}
