@@ -20,4 +20,4 @@ jobs:
       - run: pnpm install --ignore-scripts
       - run: pnpm --filter @workspace/db run push
         env:
-          DATABASE_URL: ${{ secrets.WINR_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
