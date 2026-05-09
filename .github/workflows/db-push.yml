@@ -1,0 +1,20 @@
+name: Push DB Schema
+
+on:
+  workflow_dispatch:
+
+jobs:
+  db-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: pnpm install
+      - run: pnpm --filter @workspace/db run push
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
