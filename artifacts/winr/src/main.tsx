@@ -3,6 +3,6 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import App from "./App";
 import "./index.css";
 
-setBaseUrl(import.meta.env.VITE_API_URL ?? "");
+setBaseUrl("https://winr.onrender.com");
 
 createRoot(document.getElementById("root")!).render(<App />);
